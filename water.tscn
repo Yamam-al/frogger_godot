@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://srkjxlcywblk"]
+
+[ext_resource type="Texture2D" uid="uid://bcjxlv8cjq6ww" path="res://art/tiles/water.png" id="1_0qwud"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vj40u"]
+size = Vector2(62, 62)
+
+[node name="water" type="Area2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_0qwud")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_vj40u")

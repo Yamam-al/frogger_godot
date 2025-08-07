@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://d3shtwhtm4evu"]
+
+[ext_resource type="Texture2D" uid="uid://4wxqmgsbc6v8" path="res://art/blockBrown_broken.png" id="1_0ijwl"]
+[ext_resource type="Script" path="res://scripts/agent.gd" id="1_u2qlh"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jgtvk"]
+size = Vector2(62, 64)
+
+[node name="log" type="Area2D"]
+script = ExtResource("1_u2qlh")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_0ijwl")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1, 1)
+shape = SubResource("RectangleShape2D_jgtvk")

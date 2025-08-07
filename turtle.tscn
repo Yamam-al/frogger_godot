@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://djrvjfcqxityn"]
+
+[ext_resource type="Script" path="res://scripts/agent.gd" id="1_hdfug"]
+[ext_resource type="Texture2D" uid="uid://brjstvkfyudm7" path="res://art/turtle.png" id="1_o65vp"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3ql8j"]
+radius = 30.0
+height = 68.0
+
+[node name="turtle" type="Area2D"]
+script = ExtResource("1_hdfug")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+rotation = -1.5708
+texture = ExtResource("1_o65vp")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+rotation = 1.5708
+shape = SubResource("CapsuleShape2D_3ql8j")

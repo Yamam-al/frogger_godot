@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://f4m8v7yt3wdq"]
+
+[ext_resource type="Script" path="res://scripts/agent.gd" id="1_h04vb"]
+[ext_resource type="Texture2D" uid="uid://i7p5o3jcdcey" path="res://art/car-truck2.png" id="1_pauu8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2wmqd"]
+size = Vector2(26, 68)
+
+[node name="car" type="Area2D"]
+rotation = -1.5708
+script = ExtResource("1_h04vb")
+metadata/_edit_group_ = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_pauu8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_2wmqd")
