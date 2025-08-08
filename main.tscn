@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://f4m8v7yt3wdq" path="res://car.tscn" id="1_2iskf"]
 [ext_resource type="TileSet" uid="uid://cgj2b48y5qmyv" path="res://art/tiles/froggerTiles.tres" id="1_qnmc7"]
-[ext_resource type="Script" path="res://scripts/network.gd" id="1_yof7n"]
+[ext_resource type="Script" uid="uid://b8vobd41riy7r" path="res://scripts/network.gd" id="1_yof7n"]
 [ext_resource type="PackedScene" uid="uid://but1eivuguby7" path="res://player.tscn" id="2_in21d"]
 [ext_resource type="PackedScene" uid="uid://d3shtwhtm4evu" path="res://log.tscn" id="2_mhefr"]
 [ext_resource type="PackedScene" uid="uid://djrvjfcqxityn" path="res://turtle.tscn" id="3_k6w1t"]
@@ -19,6 +19,12 @@ offset_bottom = 40.0
 clip_contents = true
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
+alignment = 1
+
+[node name="StartButton" type="Button" parent="HBoxContainer/uiLeft"]
+layout_mode = 2
+toggle_mode = true
+text = "Start"
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer"]
 layout_mode = 2
@@ -45,6 +51,7 @@ visible = false
 
 [node name="truck" parent="HBoxContainer/SubViewportContainer/SubViewport/agents" instance=ExtResource("4_lbmor")]
 visible = false
+position = Vector2(1024, 598)
 
 [node name="Player" parent="HBoxContainer/SubViewportContainer/SubViewport/agents" instance=ExtResource("2_in21d")]
 visible = false

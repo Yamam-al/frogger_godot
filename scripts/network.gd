@@ -14,11 +14,12 @@ var LogScene         = preload("res://log.tscn")
 var RiverTurtleScene = preload("res://turtle.tscn")
 var PadScene         = preload("res://pad.tscn")
 var FrogScene        = preload("res://player.tscn")
+var has_started := false
 
 
 # onready fetches the real node once the scene is ready
 @onready var agents_container: Node = get_tree().get_current_scene().get_node("HBoxContainer/SubViewportContainer/SubViewport/agents")
-
+@onready var StartButton: Button = get_tree().get_current_scene().get_node("HBoxContainer/uiLeft/StartButton")
 
 
 func _ready():
@@ -30,11 +31,17 @@ func _ready():
 	if err != OK:
 		push_error("WebSocketPeer.connect failed: %s" % err)
 	set_process(true)
+	# Toggle-Setup
+	StartButton.toggle_mode = true
+	StartButton.text = "Start"
+	StartButton.button_pressed = false
+	StartButton.toggled.connect(_on_start_toggled)
 
 var input_cooldown := 0.2
 var time_since_last_input := 0.0
 
 func _process(delta):
+	
 	time_since_last_input += delta
 
 	var direction := "null"
@@ -53,7 +60,6 @@ func _process(delta):
 		if direction != "null" and socket.get_ready_state() == WebSocketPeer.STATE_OPEN:
 			var input_msg = {
 				"type": "input",
-				"agent_id": 1,
 				"direction": direction
 			}
 			print("Sending msg to socket: %s" % input_msg)
@@ -135,3 +141,26 @@ func _apply_state(state) -> void:
 				agents[id].update_state(pos, head)
 			"frog":
 				agents[id].update_state(pos, head)
+
+func _on_start_toggled(pressed: bool) -> void:
+	if socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		push_warning("WebSocket not open")
+		return
+	if not has_started:
+	# erster Klick => Start
+		var msg = {"type": "control", "cmd": "start"}
+		socket.send_text(JSON.stringify(msg))
+		has_started = true
+		StartButton.text = "Pause"      # jetzt kann man pausieren
+		StartButton.button_pressed = true
+		return
+		
+	# Danach ist es ein echter Toggle:
+	if pressed:	
+		# Button ist „down“ ⇒ Resume läuft ⇒ Button zeigt 'Pause'
+		socket.send_text(JSON.stringify({"type":"control","cmd":"resume"}))
+		StartButton.text = "Pause"
+	else:
+		# Button ist „up“ ⇒ Pause ⇒ Button zeigt 'Resume'
+		socket.send_text(JSON.stringify({"type":"control","cmd":"pause"}))
+		StartButton.text = "Resume"

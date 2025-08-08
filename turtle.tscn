@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://djrvjfcqxityn"]
 
-[ext_resource type="Script" path="res://scripts/agent.gd" id="1_hdfug"]
+[ext_resource type="Script" uid="uid://tf7nsjq2k2sj" path="res://scripts/agent.gd" id="1_hdfug"]
 [ext_resource type="Texture2D" uid="uid://brjstvkfyudm7" path="res://art/turtle.png" id="1_o65vp"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_3ql8j"]

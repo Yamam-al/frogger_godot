@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://bxtgwwgm176c0"]
 
-[ext_resource type="Script" path="res://scripts/agent.gd" id="1_r6uff"]
+[ext_resource type="Script" uid="uid://tf7nsjq2k2sj" path="res://scripts/agent.gd" id="1_r6uff"]
 [ext_resource type="Texture2D" uid="uid://bavktris4hw0u" path="res://art/car-truck5.png" id="1_snepr"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ga20w"]
@@ -10,10 +10,12 @@ size = Vector2(31, 108)
 script = ExtResource("1_r6uff")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(-28.7078, -0.629597)
 rotation = -1.5708
 texture = ExtResource("1_snepr")
+offset = Vector2(-0.629701, 28.7078)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 1.5)
+position = Vector2(-1, 0)
 rotation = -1.5708
 shape = SubResource("RectangleShape2D_ga20w")
