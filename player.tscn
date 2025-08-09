@@ -8,7 +8,7 @@ radius = 9.0
 height = 24.0
 
 [node name="Player" type="Area2D"]
-position = Vector2(584, 611)
+z_index = 1
 script = ExtResource("1_fqmjp")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

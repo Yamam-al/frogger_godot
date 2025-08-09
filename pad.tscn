@@ -1,12 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://bnfvx0d53lh5j"]
+[gd_scene load_steps=4 format=3 uid="uid://bnfvx0d53lh5j"]
 
 [ext_resource type="Texture2D" uid="uid://cg6w7sna1uwta" path="res://art/tiles/pad.png" id="1_a10iq"]
+[ext_resource type="Script" uid="uid://tf7nsjq2k2sj" path="res://scripts/agent.gd" id="1_aqlkc"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_xy433"]
 radius = 25.0
 height = 68.0
 
 [node name="pad" type="Area2D"]
+script = ExtResource("1_aqlkc")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("1_a10iq")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=4 uid="uid://ffrh2egq65m"]
+[gd_scene load_steps=9 format=4 uid="uid://ffrh2egq65m"]
 
 [ext_resource type="PackedScene" uid="uid://f4m8v7yt3wdq" path="res://car.tscn" id="1_2iskf"]
 [ext_resource type="TileSet" uid="uid://cgj2b48y5qmyv" path="res://art/tiles/froggerTiles.tres" id="1_qnmc7"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://d3shtwhtm4evu" path="res://log.tscn" id="2_mhefr"]
 [ext_resource type="PackedScene" uid="uid://djrvjfcqxityn" path="res://turtle.tscn" id="3_k6w1t"]
 [ext_resource type="PackedScene" uid="uid://bxtgwwgm176c0" path="res://truck.tscn" id="4_lbmor"]
+[ext_resource type="PackedScene" uid="uid://bnfvx0d53lh5j" path="res://pad.tscn" id="8_kek77"]
 
 [node name="main" type="Node"]
 script = ExtResource("1_yof7n")
@@ -20,6 +21,10 @@ clip_contents = true
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 alignment = 1
+
+[node name="ResetButton" type="Button" parent="HBoxContainer/uiLeft"]
+layout_mode = 2
+text = "New Game"
 
 [node name="StartButton" type="Button" parent="HBoxContainer/uiLeft"]
 layout_mode = 2
@@ -57,6 +62,18 @@ position = Vector2(1024, 598)
 visible = false
 position = Vector2(507, 1054)
 
+[node name="pad" parent="HBoxContainer/SubViewportContainer/SubViewport/agents" instance=ExtResource("8_kek77")]
+visible = false
+
 [node name="uiRight" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
+alignment = 1
+
+[node name="LivesLabel" type="Label" parent="HBoxContainer/uiRight"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="JumpLabel" type="Label" parent="HBoxContainer/uiRight"]
+layout_mode = 2
+horizontal_alignment = 1
