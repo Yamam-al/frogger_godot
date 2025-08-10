@@ -5,7 +5,9 @@ signal state_update(state)
 
 # === Member vars ===
 var socket: WebSocketPeer = WebSocketPeer.new()
-var agents := {}
+var agents := {}                 # id -> Node
+var id_to_breed := {}            # id -> "breed" (für Debug & Zählungen)
+var pad_dummy_spawned := {}      # padId -> true, damit wir nicht doppelt spawnen
 
 # === Preload agent scenes ===
 var CarScene         = preload("res://car.tscn")
@@ -25,19 +27,19 @@ var game_over_state := false
 @onready var lives_label : Label = get_tree().get_current_scene().get_node("HBoxContainer/uiRight/LivesLabel")
 
 func _ready():
-	# sanity‐check that we actually found your "agents" node
 	if not agents_container:
 		push_error("Could not find agents_container %s")
-	# start the WebSocket
 	var err = socket.connect_to_url("ws://127.0.0.1:8181")
 	if err != OK:
 		push_error("WebSocketPeer.connect failed: %s" % err)
 	set_process(true)
+
 	# Start-Button Setup
 	StartButton.toggle_mode = true
 	StartButton.text = "Start"
 	StartButton.button_pressed = false
 	StartButton.toggled.connect(_on_start_toggled)
+
 	# Reset-Button Setup
 	ResetButton.disabled = true
 	ResetButton.text = "Reset"
@@ -50,7 +52,6 @@ func _process(delta):
 	time_since_last_input += delta
 
 	var direction := "null"
-
 	if time_since_last_input >= input_cooldown:
 		if Input.is_action_just_pressed("ui_up"):
 			direction = "up"
@@ -62,10 +63,7 @@ func _process(delta):
 			direction = "right"
 
 		if direction != "null" and socket.get_ready_state() == WebSocketPeer.STATE_OPEN:
-			var input_msg = {
-				"type": "input",
-				"direction": direction
-			}
+			var input_msg = {"type": "input", "direction": direction}
 			print("Sending msg to socket: %s" % input_msg)
 			socket.send_text(JSON.stringify(input_msg))
 			time_since_last_input = 0.0
@@ -76,12 +74,8 @@ func _process(delta):
 		while socket.get_available_packet_count() > 0:
 			var raw = socket.get_packet().get_string_from_utf8()
 			_on_raw_data(raw)
-
 	elif socket.get_ready_state() == WebSocketPeer.STATE_CLOSED:
-		push_warning("WebSocket closed: %d %s" % [
-			socket.get_close_code(),
-			socket.get_close_reason()
-		])
+		push_warning("WebSocket closed: %d %s" % [socket.get_close_code(), socket.get_close_reason()])
 		set_process(false)
 
 func _on_raw_data(raw: String) -> void:
@@ -92,6 +86,14 @@ func _on_raw_data(raw: String) -> void:
 		return
 	var state = parser.data
 
+	# === Debug: Turtle-IDs im Paket zählen und ausgeben
+	if state.has("agents") and typeof(state.agents) == TYPE_ARRAY:
+		var turtle_ids_state: Array = []
+		for a in state.agents:
+			if a.breed == "turtle":
+				turtle_ids_state.append(int(a.id))
+		print("🐢 state turtles count=", turtle_ids_state.size(), " ids=", turtle_ids_state)
+
 	if state.has("gameOver") and state["gameOver"]:
 		print("Game Over received from server")
 		game_over_state = true
@@ -101,7 +103,8 @@ func _on_raw_data(raw: String) -> void:
 
 	if state.has("lives"):
 		lives_label.text = "Lives: %d" % int(state.lives)
-	
+
+	# alte Knoten entfernen
 	if state.has("removeIds") and typeof(state.removeIds) == TYPE_ARRAY:
 		for rid in state.removeIds:
 			var id = int(rid)
@@ -110,7 +113,9 @@ func _on_raw_data(raw: String) -> void:
 				if is_instance_valid(node):
 					node.queue_free()
 				agents.erase(id)
+				id_to_breed.erase(id)
 
+	# ACK
 	if state.has("expectingTick"):
 		var next_tick = state["expectingTick"]
 		print("✨ ACKing tick", next_tick)
@@ -122,6 +127,25 @@ func _on_raw_data(raw: String) -> void:
 	emit_signal("state_update", state)
 	_apply_state(state)
 
+	# === Debug: Instanzierte Turtles im Scene-Tree zählen + Diff zu State
+	var inst_turtle_ids: Array = []
+	for k in agents.keys():
+		if id_to_breed.get(k, "") == "turtle":
+			inst_turtle_ids.append(k)
+	print("🐢 instantiated turtles count=", inst_turtle_ids.size(), " ids=", inst_turtle_ids)
+
+	# Diff (welche IDs sind im State, aber nicht instanziert)
+	var state_turtle_ids: Array = []
+	for a in state.agents:
+		if a.breed == "turtle":
+			state_turtle_ids.append(int(a.id))
+	var missing: Array = []
+	for tid in state_turtle_ids:
+		if not inst_turtle_ids.has(tid):
+			missing.append(tid)
+	if missing.size() > 0:
+		print("⚠️ turtles missing in scene (present in state but not spawned): ", missing)
+
 func _apply_state(state) -> void:
 	for data in state.agents:
 		var id     = int(data.id)
@@ -130,33 +154,41 @@ func _apply_state(state) -> void:
 		var head   = data.heading
 		var is_hidden = data.has("hidden") and data.hidden
 
+		# neu instanzieren falls nicht vorhanden
 		if not agents.has(id):
 			var inst
 			match kind:
-				"car":           inst = CarScene.instantiate()
-				"truck":         inst = TruckScene.instantiate()
-				"log":           inst = LogScene.instantiate()
-				"turtle":        inst = RiverTurtleScene.instantiate()
-				"pad":           inst = PadScene.instantiate()
-				"frog":          inst = FrogScene.instantiate()
-				_: continue
+				"car":    inst = CarScene.instantiate()
+				"truck":  inst = TruckScene.instantiate()
+				"log":    inst = LogScene.instantiate()
+				"turtle":
+					inst = RiverTurtleScene.instantiate()
+					print("🐢 spawn turtle id=", id, " at tile=", pos)
+				"pad":    inst = PadScene.instantiate()
+				"frog":   inst = FrogScene.instantiate()
+				_:       continue
 			inst.agent_id = id
 			agents[id] = inst
+			id_to_breed[id] = kind
 			agents_container.add_child(inst)
 
+		# state auf Node anwenden
 		match kind:
 			"car", "truck", "log":
 				agents[id].update_state(pos, head)
 			"turtle":
+				# update_state(pos, head, hidden := false)
 				agents[id].update_state(pos, head, is_hidden)
 			"pad":
 				agents[id].update_state(pos, head)
-				if data.has("occupied") and data.occupied and not data.has("dummy_spawned"):
+				# Wenn Pad jetzt belegt und Dummy noch nicht gespawnt → Dummy-Frog anlegen (exakt an der Pad-Node-Position)
+				if data.has("occupied") and data.occupied and not pad_dummy_spawned.get(id, false):
 					var dummy_frog = FrogScene.instantiate()
+					# gleiche Bildschirmposition wie Pad-Node – die Szene rechnet selbst tile->pixel
 					dummy_frog.position = agents[id].position
 					agents_container.add_child(dummy_frog)
-					# Markierung setzen, damit wir nicht doppelt spawnen
-					data["dummy_spawned"] = true
+					pad_dummy_spawned[id] = true
+					print("✅ pad occupied id=", id, " dummy frog placed at ", dummy_frog.position)
 			"frog":
 				agents[id].update_state(pos, head)
 				if data.has("jumps"):
@@ -198,6 +230,8 @@ func _on_reset_pressed() -> void:
 		if is_instance_valid(agents[id]):
 			agents[id].queue_free()
 	agents.clear()
+	id_to_breed.clear()
+	pad_dummy_spawned.clear()
 
 	has_started = false
 	game_over_state = false

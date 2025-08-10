@@ -1,19 +1,19 @@
 [gd_scene load_steps=4 format=3 uid="uid://but1eivuguby7"]
 
 [ext_resource type="Script" uid="uid://tf7nsjq2k2sj" path="res://scripts/agent.gd" id="1_fqmjp"]
-[ext_resource type="Texture2D" uid="uid://pwh1q30qhw2p" path="res://art/playerGreen.png" id="2_0c0dn"]
+[ext_resource type="Texture2D" uid="uid://b2fits5b3h5ng" path="res://art/light Frog.png" id="2_onrkg"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_r0vtg"]
 radius = 9.0
 height = 24.0
 
 [node name="Player" type="Area2D"]
-z_index = 1
+z_index = 2
 script = ExtResource("1_fqmjp")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(0.5, 0.5)
-texture = ExtResource("2_0c0dn")
+texture = ExtResource("2_onrkg")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_r0vtg")

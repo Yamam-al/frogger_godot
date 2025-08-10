@@ -34,3 +34,10 @@
 	License (Creative Commons Zero, CC0)
 	https://opengameart.org/content/turtle-sprite
 
+
+	
+	Top-Down Frog sprite
+	
+	by HASSOUN
+	License (Creative Commons Zero, CC0)
+	https://hassoun.itch.io/top-down-frog

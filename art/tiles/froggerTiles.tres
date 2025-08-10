@@ -1,12 +1,12 @@
 [gd_resource type="TileSet" load_steps=9 format=3 uid="uid://cgj2b48y5qmyv"]
 
-[ext_resource type="Texture2D" uid="uid://gt4j5laab5hj" path="res://art/tiles/grass.png" id="1_ik8c3"]
+[ext_resource type="Texture2D" uid="uid://cboqnrm25vtdf" path="res://art/tiles/DarkGrass.png" id="1_qcfgr"]
 [ext_resource type="Texture2D" uid="uid://bgk5ynodesbm" path="res://art/tiles/street.png" id="2_psj5h"]
 [ext_resource type="Texture2D" uid="uid://bcjxlv8cjq6ww" path="res://art/tiles/water.png" id="3_lqngc"]
 [ext_resource type="Texture2D" uid="uid://cg6w7sna1uwta" path="res://art/tiles/pad.png" id="4_j7utu"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_thtp1"]
-texture = ExtResource("1_ik8c3")
+texture = ExtResource("1_qcfgr")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
