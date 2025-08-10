@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=4 uid="uid://ffrh2egq65m"]
+[gd_scene load_steps=11 format=4 uid="uid://ffrh2egq65m"]
 
 [ext_resource type="PackedScene" uid="uid://f4m8v7yt3wdq" path="res://car.tscn" id="1_2iskf"]
 [ext_resource type="TileSet" uid="uid://cgj2b48y5qmyv" path="res://art/tiles/froggerTiles.tres" id="1_qnmc7"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://djrvjfcqxityn" path="res://turtle.tscn" id="3_k6w1t"]
 [ext_resource type="PackedScene" uid="uid://bxtgwwgm176c0" path="res://truck.tscn" id="4_lbmor"]
 [ext_resource type="PackedScene" uid="uid://bnfvx0d53lh5j" path="res://pad.tscn" id="8_kek77"]
+[ext_resource type="Texture2D" uid="uid://b0jjsajolgycu" path="res://art/youWin.png" id="9_kek77"]
+[ext_resource type="Texture2D" uid="uid://csmyfwnxf30ln" path="res://art/GameOver.png" id="10_4c57u"]
 
 [node name="main" type="Node"]
 script = ExtResource("1_yof7n")
@@ -31,6 +33,13 @@ layout_mode = 2
 toggle_mode = true
 text = "Start"
 
+[node name="StartTimeSpin" type="SpinBox" parent="HBoxContainer/uiLeft"]
+layout_mode = 2
+min_value = 10.0
+max_value = 60.0
+value = 60.0
+alignment = 1
+
 [node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer"]
 layout_mode = 2
 
@@ -47,6 +56,7 @@ tile_set = ExtResource("1_qnmc7")
 
 [node name="car" parent="HBoxContainer/SubViewportContainer/SubViewport/agents" instance=ExtResource("1_2iskf")]
 visible = false
+position = Vector2(32, 224)
 
 [node name="log" parent="HBoxContainer/SubViewportContainer/SubViewport/agents" instance=ExtResource("2_mhefr")]
 visible = false
@@ -65,6 +75,20 @@ position = Vector2(507, 1054)
 [node name="pad" parent="HBoxContainer/SubViewportContainer/SubViewport/agents" instance=ExtResource("8_kek77")]
 visible = false
 
+[node name="WinningLabel" type="Node2D" parent="HBoxContainer/SubViewportContainer"]
+visible = false
+
+[node name="Sprite2D" type="Sprite2D" parent="HBoxContainer/SubViewportContainer/WinningLabel"]
+position = Vector2(544, 489)
+texture = ExtResource("9_kek77")
+
+[node name="LosingLabel" type="Node2D" parent="HBoxContainer/SubViewportContainer"]
+visible = false
+
+[node name="Sprite2D" type="Sprite2D" parent="HBoxContainer/SubViewportContainer/LosingLabel"]
+position = Vector2(544, 489)
+texture = ExtResource("10_4c57u")
+
 [node name="uiRight" type="VBoxContainer" parent="HBoxContainer"]
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
@@ -77,3 +101,8 @@ horizontal_alignment = 1
 [node name="JumpLabel" type="Label" parent="HBoxContainer/uiRight"]
 layout_mode = 2
 horizontal_alignment = 1
+
+[node name="TimeLabel" type="Label" parent="HBoxContainer/uiRight"]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1

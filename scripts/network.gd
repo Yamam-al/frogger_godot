@@ -25,6 +25,11 @@ var game_over_state := false
 @onready var ResetButton: Button = get_tree().get_current_scene().get_node("HBoxContainer/uiLeft/ResetButton")
 @onready var jump_label : Label = get_tree().get_current_scene().get_node("HBoxContainer/uiRight/JumpLabel")
 @onready var lives_label : Label = get_tree().get_current_scene().get_node("HBoxContainer/uiRight/LivesLabel")
+@onready var losing_label : Node2D = get_tree().get_current_scene().get_node("HBoxContainer/SubViewportContainer/LosingLabel")
+@onready var winning_label : Node2D = get_tree().get_current_scene().get_node("HBoxContainer/SubViewportContainer/WinningLabel")
+@onready var start_time_spin : SpinBox = get_tree().get_current_scene().get_node("HBoxContainer/uiLeft/StartTimeSpin")
+@onready var time_label      : Label   = get_tree().get_current_scene().get_node("HBoxContainer/uiRight/TimeLabel")
+
 
 func _ready():
 	if not agents_container:
@@ -44,6 +49,9 @@ func _ready():
 	ResetButton.disabled = true
 	ResetButton.text = "Reset"
 	ResetButton.pressed.connect(_on_reset_pressed)
+	
+	start_time_spin.value_changed.connect(_on_start_time_changed)
+
 
 var input_cooldown := 0.2
 var time_since_last_input := 0.0
@@ -85,6 +93,10 @@ func _on_raw_data(raw: String) -> void:
 		push_error("Invalid JSON: %s" % raw)
 		return
 	var state = parser.data
+	
+	if state.has("timeLeft"):
+		time_label.text = "Time Left: %d" % int(state.timeLeft)
+
 
 	# === Debug: Turtle-IDs im Paket zählen und ausgeben
 	if state.has("agents") and typeof(state.agents) == TYPE_ARRAY:
@@ -96,7 +108,12 @@ func _on_raw_data(raw: String) -> void:
 
 	if state.has("gameOver") and state["gameOver"]:
 		print("Game Over received from server")
+		if state.has("gameWon") and state.gameWon:
+			winning_label.visible = true
+		else:
+			losing_label.visible = true
 		game_over_state = true
+		start_time_spin.editable = true
 		has_started = false
 		StartButton.disabled = true
 		ResetButton.disabled = false
@@ -206,21 +223,26 @@ func _on_start_toggled(pressed: bool) -> void:
 		has_started = true
 		StartButton.text = "Pause"
 		StartButton.button_pressed = true
+		start_time_spin.editable = false
 		return
 
 	if pressed:
 		socket.send_text(JSON.stringify({"type":"control","cmd":"resume"}))
 		print ("sending resume signal to server")
 		StartButton.text = "Pause"
+		start_time_spin.editable = false
 	else:
 		socket.send_text(JSON.stringify({"type":"control","cmd":"pause"}))
 		print ("sending pause signal to server")
 		StartButton.text = "Resume"
+		
 
 func _on_reset_pressed() -> void:
 	if socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		push_warning("WebSocket not open")
 		return
+	winning_label.visible = false
+	losing_label.visible  = false
 
 	print("sending restart signal to server")
 	socket.send_text(JSON.stringify({"type": "control", "cmd": "restart"}))
@@ -239,3 +261,12 @@ func _on_reset_pressed() -> void:
 	ResetButton.disabled = true
 	StartButton.text = "Start"
 	StartButton.button_pressed = false
+	
+
+func _on_start_time_changed(value: float) -> void:
+	if socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
+		return
+	var seconds := int(value)
+	var msg = {"type":"control", "cmd":"set_start_time", "value": seconds}
+	print("Set start time to", seconds)
+	socket.send_text(JSON.stringify(msg))
