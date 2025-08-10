@@ -39,6 +39,23 @@ min_value = 10.0
 max_value = 60.0
 value = 60.0
 alignment = 1
+prefix = "Time: "
+
+[node name="StartLivesSpin" type="SpinBox" parent="HBoxContainer/uiLeft"]
+layout_mode = 2
+min_value = 1.0
+max_value = 5.0
+value = 5.0
+alignment = 1
+prefix = "Lives: "
+
+[node name="StartLevelSpin" type="SpinBox" parent="HBoxContainer/uiLeft"]
+layout_mode = 2
+min_value = 1.0
+max_value = 5.0
+value = 1.0
+alignment = 1
+prefix = "Level: "
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="HBoxContainer"]
 layout_mode = 2
