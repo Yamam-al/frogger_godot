@@ -59,10 +59,8 @@ func _ready():
 	# --- StartLevelSpin: aktiv + Signal ---
 	start_level_spin.editable = true
 	start_level_spin.value_changed.connect(_on_start_level_changed)
-	# Optional sauber integer + Grenzen
 	start_level_spin.step = 1
 	start_level_spin.min_value = 1
-	# start_level_spin.max_value = 10  # falls du eine Obergrenze willst
 
 	# Overlays aus
 	losing_label.visible = false
@@ -105,9 +103,19 @@ func _on_raw_data(raw: String) -> void:
 	var parser = JSON.new()
 	var err = parser.parse(raw)
 	if err != OK:
-		push_error("Invalid JSON: %s" % raw)
+		# ACKs können auch nur Zahlen/Strings sein → ignorieren
 		return
 	var state = parser.data
+
+	# --- Hard reset event (server asks to clear pad frogs) ---
+	if typeof(state) == TYPE_DICTIONARY and state.get("type", "") == "reset":
+		print("🔄 RESET event from server → clear pad dummies")
+		_remove_all_pad_dummies()
+		# UI kann optional entspannt werden
+		losing_label.visible = false
+		winning_label.visible = false
+		# Spin-Boxen bleiben wie sie sind; eigentliche Werte kommen mit dem nächsten Snapshot
+		return
 
 	# === GameOver / Win UI ===
 	if state.has("gameOver") and state["gameOver"]:
@@ -173,7 +181,6 @@ func _apply_state(state) -> void:
 				"log":    inst = LogScene.instantiate()
 				"turtle":
 					inst = RiverTurtleScene.instantiate()
-					# debug: print("🐢 spawn turtle id=", id, " at tile=", pos)
 				"pad":    inst = PadScene.instantiate()
 				"frog":   inst = FrogScene.instantiate()
 				_:       continue
@@ -190,12 +197,23 @@ func _apply_state(state) -> void:
 				agents[id].update_state(pos, head, is_hidden)
 			"pad":
 				agents[id].update_state(pos, head)
-				# Wenn Pad belegt und Dummy noch nicht gespawnt → Dummy-Frog anlegen
-				if data.has("occupied") and data.occupied and not pad_dummy_spawned.get(id, false):
-					var dummy_frog = FrogScene.instantiate()
-					dummy_frog.position = agents[id].position
-					agents_container.add_child(dummy_frog)
-					pad_dummy_spawned[id] = true
+				# Pad-Besetzung: Dummy-Frosch mit stabilem Namen spawnen/löschen
+				var occ : bool= data.has("occupied") and data.occupied
+				var name := "pad_frog_%d" % id
+				if occ:
+					if not pad_dummy_spawned.get(id, false):
+						var dummy_frog = FrogScene.instantiate()
+						dummy_frog.name = name
+						dummy_frog.position = agents[id].position
+						# WICHTIG: Kein agent_id setzen → bleibt außerhalb von 'agents'!
+						agents_container.add_child(dummy_frog)
+						pad_dummy_spawned[id] = true
+				else:
+					# wenn frei gemeldet → evtl. vorhandenen Dummy entfernen
+					if pad_dummy_spawned.get(id, false):
+						if agents_container.has_node(name):
+							agents_container.get_node(name).queue_free()
+						pad_dummy_spawned.erase(id)
 			"frog":
 				agents[id].update_state(pos, head)
 				if data.has("jumps"):
@@ -248,6 +266,9 @@ func _on_reset_pressed() -> void:
 			agents[id].queue_free()
 	agents.clear()
 	id_to_breed.clear()
+
+	# WICHTIG: auch alle Pad-Dummys entfernen (die sind nicht in 'agents')
+	_remove_all_pad_dummies()
 	pad_dummy_spawned.clear()
 
 	has_started = false
@@ -290,3 +311,18 @@ func _on_start_level_changed(value: float) -> void:
 	var msg = {"type":"control", "cmd":"set_start_level", "value": lvl}
 	print("Set start level to", lvl)
 	socket.send_text(JSON.stringify(msg))
+
+# === Helpers ===
+func _remove_all_pad_dummies() -> void:
+	# Entfernt alle Nodes, die wir als Pad-Dummys benannt haben.
+	if not is_instance_valid(agents_container):
+		return
+	# Schneller Weg: über das Dictionary der gesetzten Flags laufen
+	for pad_id in pad_dummy_spawned.keys():
+		var name := "pad_frog_%d" % int(pad_id)
+		if agents_container.has_node(name):
+			agents_container.get_node(name).queue_free()
+	# Fallback-Sauberkeit: alles mit Präfix killen (falls Flags out-of-sync)
+	for child in agents_container.get_children():
+		if typeof(child.name) == TYPE_STRING and child.name.begins_with("pad_frog_"):
+			child.queue_free()
